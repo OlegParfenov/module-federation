@@ -1,16 +1,26 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+
 const { ModuleFederationPlugin } = require('webpack').container;
+
+const remotes = {
+  development: {
+    mainApp: 'mainApp@http://localhost:3000/remoteEntry.js',
+  },
+  production: {
+    mainApp: 'mainApp@http://localhost:3000/remoteEntry.js',
+  },
+}
 
 module.exports = {
   entry: './src/index',
   mode: 'development',
   devServer: {
     contentBase: path.join(__dirname, 'dist'),
-    port: 3000,
+    port: 3001,
   },
   output: {
-    publicPath: "http://localhost:3000/",
+    publicPath: "http://localhost:3001/", // Added this
   },
   module: {
     rules: [
@@ -26,10 +36,15 @@ module.exports = {
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: 'app1',
-      library: { type: 'var', name: 'app1' },
+      name: 'secondApp',
+      // library: { type: 'var', name: 'secondApp' },
+      filename: 'remoteEntry.js',
+      exposes: {
+        // expose each component you want 
+        './Counter': './src/components/Counter',
+      },
       remotes: {
-        app2: 'app2',
+        mainApp: remotes.development.mainApp,
       },
       shared: ['react', 'react-dom'],
     }),
